@@ -13,14 +13,20 @@ import datetime
 st.set_page_config(page_title="Building Regs Chatbot", page_icon="🏗️")
 st.title("🏗️ Building Regulations Chatbot")
 
-# 🔐 Always prompt for OpenAI API Key in sidebar
-openai_api_key = st.sidebar.text_input("Enter your OpenAI API Key", type="password")
-if not openai_api_key:
+# Prompt for OpenAI API key once and store it in session
+if "openai_api_key" not in st.session_state:
+    st.session_state.openai_api_key = ""
+
+st.session_state.openai_api_key = st.sidebar.text_input(
+    "Enter your OpenAI API Key", value=st.session_state.openai_api_key, type="password"
+)
+
+if not st.session_state.openai_api_key:
     st.sidebar.warning("Please enter your OpenAI API key to begin.")
     st.stop()
 
-openai.api_key = openai_api_key
-os.environ["OPENAI_API_KEY"] = openai_api_key
+openai.api_key = st.session_state.openai_api_key
+os.environ["OPENAI_API_KEY"] = st.session_state.openai_api_key
 
 # Load FAISS index from disk
 embeddings = OpenAIEmbeddings()
