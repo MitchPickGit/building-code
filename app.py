@@ -62,15 +62,18 @@ if user_question:
         st.session_state.chat_history.append(("You", user_question))
         st.session_state.chat_history.append(("Bot", answer))
 
-        # Append sources
-        if sources:
-            refs = set(doc.metadata.get("citation") for doc in sources)
-            clause_texts = [f"\n\n**{doc.metadata['citation']}**\n{doc.metadata['text']}" for doc in sources]
-            full_refs = "\n\nSources: " + ", ".join(sorted(refs))
-            full_text = "\n".join(clause_texts)
-            st.session_state.chat_sources.append((full_refs, full_text))
-        else:
-            st.session_state.chat_sources.append(("", ""))
+        # Format citations cleanly
+        citations = []
+        for doc in sources:
+            citation = doc.metadata.get("citation") or ""
+            part = doc.metadata.get("part") or ""
+            division = doc.metadata.get("division") or ""
+            page = doc.metadata.get("page") or ""
+            label = f"**{citation}** – {part}, {division} (Page {page})"
+            citations.append(label)
+
+        formatted_refs = "\n\nSources:\n" + "\n".join(citations) if citations else ""
+        st.session_state.chat_sources.append((formatted_refs, ""))
 
 # Display chat history
 for i, (sender, message) in enumerate(st.session_state.chat_history):
@@ -78,12 +81,11 @@ for i, (sender, message) in enumerate(st.session_state.chat_history):
         st.chat_message("user").write(message)
     else:
         st.chat_message("assistant").write(message)
-        # Show reference toggle
-        refs, full_clause = st.session_state.chat_sources[i // 2] if i // 2 < len(st.session_state.chat_sources) else ("", "")
+        # Show reference toggle (only clean metadata now)
+        refs, _ = st.session_state.chat_sources[i // 2] if i // 2 < len(st.session_state.chat_sources) else ("", "")
         if refs:
-            with st.expander("🔎 Show Sources and Clause Text"):
+            with st.expander("🔎 Show Sources"):
                 st.markdown(refs)
-                st.markdown(full_clause)
 
 # Export chat log
 def export_chat():
@@ -93,7 +95,7 @@ def export_chat():
     for i, (sender, message) in enumerate(st.session_state.chat_history):
         buffer.write(f"{sender}: {message}\n")
         if sender == "Bot" and i // 2 < len(st.session_state.chat_sources):
-            refs, full_clause = st.session_state.chat_sources[i // 2]
+            refs, _ = st.session_state.chat_sources[i // 2]
             buffer.write(f"{refs}\n\n")
     buffer.seek(0)
     return buffer
