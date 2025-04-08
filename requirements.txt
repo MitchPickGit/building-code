@@ -1,5 +1,5 @@
 streamlit
-openai==1.3.9
+openai==0.27.8
 langchain==0.0.331
 faiss-cpu
 pandas
