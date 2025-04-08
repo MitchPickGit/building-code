@@ -34,7 +34,7 @@ vectorstore = FAISS.load_local("faiss_index", embeddings)
 retriever = vectorstore.as_retriever()
 
 # Memory and model
-memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True, output_key="answer")
 llm = ChatOpenAI(temperature=0, model_name="gpt-4")
 qa_chain = ConversationalRetrievalChain.from_llm(
     llm=llm,
