@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
@@ -23,34 +22,13 @@ if api_key:
     openai.api_key = api_key
     os.environ["OPENAI_API_KEY"] = api_key
 
-    # Load CSV
-    df = pd.read_csv("structured_regulations.csv")
-
-    # Prepare documents and metadata
-    texts = []
-    metadatas = []
-    for _, row in df.iterrows():
-        content = row["Text"]
-        if pd.notna(content) and content.strip():
-            ref = row["Full Reference"]
-            page = row["Start Page"]
-            citation = f"{ref} (Page {page})"
-            texts.append(f"{ref}\n{content}")
-            metadatas.append({"reference": ref, "page": page, "citation": citation, "text": content})
-
-    # Split into chunks
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-    docs = splitter.create_documents(texts, metadatas=metadatas)
-
-    # Vectorstore
+    # Load FAISS index from disk
     embeddings = OpenAIEmbeddings()
-    vectorstore = FAISS.from_documents(docs, embeddings)
+    vectorstore = FAISS.load_local("faiss_index", embeddings)
     retriever = vectorstore.as_retriever()
 
-    # Conversation memory
+    # Memory and model
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-
-    # LLM
     llm = ChatOpenAI(temperature=0, model_name="gpt-4")
     qa_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
