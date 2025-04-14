@@ -56,17 +56,23 @@ if user_question:
         st.session_state.chat_history.append(("You", user_question))
         st.session_state.chat_history.append(("Bot", answer))
 
-        # Format citations
-        citations = []
-        for doc in sources:
-            source = doc.metadata.get("source", "")
-            clause = doc.metadata.get("clause", "")
-            part = doc.metadata.get("part", "")
-            division = doc.metadata.get("division", "")
-            page = doc.metadata.get("page", "")
-            url = doc.metadata.get("pdf_url", "")
-            label = f"**{source}** – {clause} ({part}, {division}, Page {page}) [🔗 PDF]({url})"
-            citations.append(label)
+  # Format citations safely
+citations = []
+for doc in sources:
+    meta = doc.metadata
+    source = meta.get("source", "Unknown Source")
+    clause = meta.get("clause", "").strip()
+    part = meta.get("part", "").strip()
+    division = meta.get("division", "").strip()
+    page = meta.get("page", "")
+    url = meta.get("pdf_url", "")
+
+    bits = [clause, part, division]
+    info = ", ".join([b for b in bits if b])
+    label = f"**{source}** – {info} (Page {page})"
+    if url:
+        label += f" [🔗 PDF]({url})"
+    citations.append(label)
 
         formatted_refs = "\n\nSources:\n" + "\n".join(citations) if citations else ""
         st.session_state.chat_sources.append((formatted_refs, ""))
