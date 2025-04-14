@@ -8,8 +8,15 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 
-# 🔐 Your OpenAI API Key (hardcoded)
-os.environ["OPENAI_API_KEY"] = "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"
+# 🔐 Prompt user to manually enter OpenAI API key
+st.sidebar.markdown("### 🔑 OpenAI API Key")
+api_key = st.sidebar.text_input("Paste your OpenAI key here", type="password")
+
+if not api_key:
+    st.warning("Please enter your OpenAI API key to use the chatbot.")
+    st.stop()
+
+os.environ["OPENAI_API_KEY"] = api_key
 
 # Streamlit UI setup
 st.set_page_config(page_title="Building Regs Chatbot", page_icon="🏗️")
