@@ -87,4 +87,21 @@ def export_chat():
     buffer = io.StringIO()
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     buffer.write(f"Building Regulations Chat Export ({now})\n\n")
-    for i, (sender
+    for i, (sender, message) in enumerate(st.session_state.chat_history):
+        buffer.write(f"{sender}: {message}\n")
+        if sender == "Bot" and i // 2 < len(st.session_state.chat_sources):
+            refs, _ = st.session_state.chat_sources[i // 2]
+            buffer.write(f"{refs}\n\n")
+    buffer.seek(0)
+    return buffer
+
+st.sidebar.markdown("---")
+if st.sidebar.button("📁 Export Chat Log"):
+    st.sidebar.download_button(
+        label="Download Chat with References",
+        data=export_chat(),
+        file_name="building_regs_chat_log.txt",
+        mime="text/plain"
+    )
+
+st.sidebar.markdown("Built for contextual legal compliance and clear clause traceability.")
