@@ -47,13 +47,16 @@ if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 if "chat_sources" not in st.session_state:
     st.session_state.chat_sources = []
-
 # 💬 Handle query
 if user_question:
     with st.spinner("Thinking..."):
         result = qa_chain({"question": user_question})
         answer = result["answer"]
         sources = result.get("source_documents", [])
+
+        # 🔎 Debug: Show raw metadata in sidebar
+        for i, doc in enumerate(sources):
+            st.sidebar.write(f"🔎 Source {i+1}: {doc.metadata}")
 
         st.session_state.chat_history.append(("You", user_question))
         st.session_state.chat_history.append(("Bot", answer))
