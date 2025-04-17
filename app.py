@@ -44,6 +44,10 @@ if "chat_history" not in st.session_state:
 if "chat_sources" not in st.session_state:
     st.session_state.chat_sources = []
 
+# ✅ Make sure the app continues only if the key is provided
+if not st.session_state.openai_api_key:
+    st.stop()
+
 # 💬 User input
 user_question = st.chat_input("Ask a question about the building regulations...")
 
