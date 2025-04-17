@@ -44,23 +44,20 @@ if "chat_history" not in st.session_state:
 if "chat_sources" not in st.session_state:
     st.session_state.chat_sources = []
 
-# ✅ Make sure the app continues only if the key is provided
-if not st.session_state.openai_api_key:
-    st.stop()
+# 💬 User input (safe fallback)
+user_question = st.text_input("Ask a question about the building regulations:")
 
-# 💬 User input
-user_question = st.chat_input("Ask a question about the building regulations...")
-
-if user_question:
+if user_question and user_question.strip() != "":
     with st.spinner("Thinking..."):
         result = qa_chain({"question": user_question})
         answer = result["answer"]
         sources = result.get("source_documents", [])
 
+        # Store chat
         st.session_state.chat_history.append(("You", user_question))
         st.session_state.chat_history.append(("Bot", answer))
 
-        # 📄 Format citations
+        # Format citations
         citations = []
         for doc in sources:
             source = doc.metadata.get("source", "")
@@ -75,7 +72,7 @@ if user_question:
         formatted_refs = "\n\nSources:\n" + "\n".join(citations) if citations else ""
         st.session_state.chat_sources.append((formatted_refs, ""))
 
-# 🧾 Chat display
+# 💬 Chat history display
 for i, (sender, message) in enumerate(st.session_state.chat_history):
     if sender == "You":
         st.chat_message("user").write(message)
